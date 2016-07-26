@@ -2,7 +2,7 @@
 
 set -e
 
-APP_DIR=$PWD
+APP_DIR="$PWD"
 export PATH="$PATH:$APP_DIR/.meteor"
 
 curl -sL https://install.meteor.com | sh
@@ -37,9 +37,9 @@ echo "---> Building your Meteor application"
 
 cd /tmp/src
 npm install -d --production
-meteor build --directory $APP_DIR --server=http://127.0.0.1:8080 --architecture os.linux.x86_64
+meteor build --directory "$APP_DIR" --server=http://127.0.0.1:8080 --architecture os.linux.x86_64
 
 # Fix source directory permissions
-fix-permissions $APP_DIR
+fix-permissions "$APP_DIR"
 
-rm -rf /tmp/src/
+rm -rf /tmp/src/ "$APP_DIR/.meteor"
