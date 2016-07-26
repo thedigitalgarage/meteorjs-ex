@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+APP_DIR=$PWD
+
+curl -sL https://install.meteor.com | sh
+
+if [ ! -z $HTTP_PROXY ]; then
+	echo "---> Setting npm http proxy to $HTTP_PROXY"
+	npm config set proxy $HTTP_PROXY
+fi
+
+if [ ! -z $http_proxy ]; then
+	echo "---> Setting npm http proxy to $http_proxy"
+	npm config set proxy $http_proxy
+fi
+
+if [ ! -z $HTTPS_PROXY ]; then
+	echo "---> Setting npm https proxy to $HTTPS_PROXY"
+	npm config set https-proxy $HTTPS_PROXY
+fi
+
+if [ ! -z $https_proxy ]; then
+	echo "---> Setting npm https proxy to $https_proxy"
+	npm config set https-proxy $https_proxy
+fi
+
+# Change the npm registry mirror if provided
+if [ ! -z "$NPM_MIRROR" ]; then
+	echo "---> Setting the npm package mirror to $NPM_MIRROR"
+	npm config set registry $NPM_MIRROR
+fi
+
+echo "---> Building your Meteor application"
+
+cd /tmp/src
+npm install -d --production
+meteor build --directory $APP_DIR --server=http://127.0.0.1:8080 --architecture os.linux.x86_64
+
+# Fix source directory permissions
+fix-permissions $APP_DIR
+
+rm -rf ./
