@@ -28,7 +28,6 @@ We will be:
 + Forking the Meteor seed project on the Digital Garage Github Organization to your private repository.
 + Creating a Meteor application workspace on the Digital Garage platform.
 + Bootstrapping Meteor in your Meteor Application workspace with MongoDB and Node.js containers from Docker Hub.
-+ Building the AngularJS application from the source in the forked repository and deploying the application on Meteor.
 
 After signing into your Github account, go to: [www.github.com/thdigitalgarage/meteor-ex](www.github.com/thedigitalgarage/meteor-ex) and fork the repository into your own account. This repository contains some files and a file structure that will give you a quick start on your Meteor application. I go into more detail on the files and file structure a little further into the tutorial. For now, let's complete our setup by logging into your Digital Garage account and set up Meteor.
 
@@ -36,7 +35,7 @@ After signing into your Digital Garage account, Choose the Add to Project link i
 
 ![Add To Project](http://assets-digitalgarage-infra.apps.thedigitalgarage.io/images/screenshots/add_to_project.png)
 
-In the add to project screen, choose Meteor Quickstart (qs-meteor) from the catalog.
+In the add to project screen, choose Meteor Quickstart (qs-meteor-mongo) from the catalog.
 
 ![Add To Project](http://assets-digitalgarage-infra.apps.thedigitalgarage.io/images/screenshots/choose_quickstart.png)
 
@@ -44,29 +43,32 @@ In the template configuration page for Meteor Quickstart change the Git Reposito
 
 ![Add To Project](http://assets-digitalgarage-infra.apps.thedigitalgarage.io/images/screenshots/quickstart-configure.png)
 
-That's it. Digital Garage is now setting up your Meteor. On the next page you'll be presented with some information about your new application. When you are ready, click "Continue to Overview". You will be taken to the Project Overview screen where you can watch Digital Garage do the setup work for you. In just a few minutes you'll have full Meteor stack running in containers and managed through Google Kubernetes. When MongoDB and Node.js are completely deployed, (the pod status circle is Green) simply click on the application URL in the upper right corner of the overview screen. You will be taken to a browser to see a simple "Hello World" message.
+That's it. Digital Garage is now setting up your Meteor application with MongoDB. On the next page you'll be presented with some information about your new application. When you are ready, click "Continue to Overview". You will be taken to the Project Overview screen where you can watch Digital Garage do the setup work for you. In just a few minutes you'll have full Meteor stack running in containers and managed through Google Kubernetes. When MongoDB deploy and the Node.js build are complete, (the pod status circle is Green) simply click on the application URL in the upper right corner of the overview screen. You will be taken to a browser to see a simple "Hello World" message.
 
 ## File Structure
 
-Now that we have the Meteor Example repository forked into your account, let's take a few minutes to review the file structure for the repository. There are many ways to structure a Meteor application. I have tried to take the best-practices from several tutorials and create a simple yet expandable file structure for this example project. For further reading on file structures for Meteor, [Mean.io](http://mean.io) is a good boilerplate to see best practices and how to separate file structure. For now we will just use the following structure and adjust as we go.
+Now that we have the Meteor Example repository forked into your account, let's take a few minutes to review the file structure for the repository.
 
 ```
 
-meteor-ex
-  ├── app - files for node components (models, routes)
-  ├── config - all our configuration will be here
-  │   └── database.js
+meteorjs-ex
+  ├── .meteor 
+  │   ├── packages
+  │   ├── platforms
+  │   ├── release
+  │   └── versions
+  ├── client 
+  │   ├── main.css
+  │   ├── main.html
+  │   └── main.js
   ├── LICENSE
   ├── openshift
   │   └── templates
-  │       └── qs-meteor.json - example template for Kubernetes.
-  ├── public - files for our front-end angular application
-  │   ├── app.js
-  │   └── index.html
+  │       └── qs-meteor-mongo.yaml - example template for Kubernetes.
+  ├── server - files for our front-end angular application 
+  │   └── main.js
   ├── package.json -npm configuration to install dependencies/modules
-  ├── README.md
-  ├── tests - files for basic test scripts
-  └── server.js -Node configuration
+  └── README.md
 
 ```
 
@@ -84,7 +86,7 @@ You can create a new application using the web console or by running the `oc new
 
 Pointing `oc new-app` at source code kicks off a chain of events, for our example run:
 
-        $ oc new-app https://github.com/thedigitalgarage/meteor-ex -l name=myapp
+        $ oc new-app https://github.com/thedigitalgarage/meteorjs-ex -l name=myapp
 
 The tool will inspect the source code, locate an appropriate image on DockerHub, create an ImageStream for that image, and then create the right build configuration, deployment configuration and service definition.
 
@@ -92,32 +94,34 @@ The tool will inspect the source code, locate an appropriate image on DockerHub,
 
 ### Create a new app from a template (method 2)
 
-We can also [create new apps using template files](http://docs.thedigitalgarage.io/dev_guide/new_app.html#specifying-a-template). Clone the demo app source code from [GitHub repo](https://github.com/thedigitalgarage/meteor-ex) (fork if you like).
+We can also [create new apps using template files](http://docs.thedigitalgarage.io/dev_guide/new_app.html#specifying-a-template). Clone the demo app source code from [GitHub repo](https://github.com/thedigitalgarage/meteorjs-ex) (fork if you like).
 
-        $ git clone https://github.com/thedigitalgarage/meteor-ex
+        $ git clone https://github.com/thedigitalgarage/meteorjs-ex
 
 Looking at the repo, you'll notice one file in the openshift/templates directory:
 ```
-meteor-ex
-  ├── app - files for node components (models, routes)
-  ├── config - all our configuration will be here
-  │   └── database.js
+meteorjs-ex
+  ├── .meteor 
+  │   ├── packages
+  │   ├── platforms
+  │   ├── release
+  │   └── versions
+  ├── client 
+  │   ├── main.css
+  │   ├── main.html
+  │   └── main.js
   ├── LICENSE
   ├── openshift
   │   └── templates
-  │       └── qs-meteor.json - example template for Kubernetes.
-  ├── public - files for our front-end angular application
-  │   ├── app.js
-  │   └── index.html
+  │       └── qs-meteor-mongo.yaml - example template for Kubernetes.
+  ├── server - files for our front-end angular application 
+  │   └── main.js
   ├── package.json -npm configuration to install dependencies/modules
-  ├── README.md
-  ├── tests - files for basic test scripts
-  └── server.js -Node configuration
-
+  └── README.md
 ```
-We can create the the new app from the `qs-meteor.json` template by using the `-f` flag and pointing the tool at a path to the template file:
+We can create the the new app from the `qs-meteor-mongo.yaml` template by using the `-f` flag and pointing the tool at a path to the template file:
 
-        $ oc new-app -f /path/to/qs-meteor.json
+        $ oc new-app -f /path/to/qs-meteor-mongo.yaml
 
 #### Build the app
 
@@ -133,7 +137,7 @@ Which should return something like:
 
         svc/meteor-ex - 172.30.108.183:8080
           dc/meteor-ex deploys istag/nodejs-ex:latest <-
-            bc/meteor-ex builds https://github.com/thedigitalgarage/meteor-ex with openshift/nodejs:0.10
+            bc/meteor-ex builds https://github.com/thedigitalgarage/meteorjs-ex with openshift/nodejs:0.10
               build #1 running for 7 seconds
             deployment #1 waiting on image or update
 
@@ -141,9 +145,9 @@ Note: You can follow along with the web console to see what new resources have b
 
 If the build is not yet started (you can check by running `oc get builds`), start one and stream the logs with:
 
-        $ oc start-build meteor-ex --follow
+        $ oc start-build meteorjs-ex --follow
 
-You can alternatively leave off `--follow` and use `oc logs build/meteor-ex-n` where *n* is the number of the build to track the output of the build.
+You can alternatively leave off `--follow` and use `oc logs build/meteorjs-ex-n` where *n* is the number of the build to track the output of the build.
 
 #### Deploy the app
 
@@ -154,7 +158,7 @@ Deployment happens automatically once the new application image is available.  T
 This will help indicate what IP address the service is running, the default port for it to deploy at is 8080. Output should look like:
 
         NAME        CLUSTER-IP       EXTERNAL-IP   PORT(S)    SELECTOR                                AGE
-        meteor-ex   172.30.249.251   <none>        8080/TCP   deploymentconfig=nodejs-ex,name=myapp   17m
+        meteorjs-ex   172.30.249.251   <none>        8080/TCP   deploymentconfig=meteorjs-ex,name=myapp   17m
 
 #### Configure routing
 
@@ -166,7 +170,7 @@ After logging into the web console with your account credentials, make sure you 
 
 This could also be accomplished by running:
 
-        $ oc expose svc/meteor-ex --hostname=myapp-myproject.apps.thedigitalgarage.io
+        $ oc expose svc/meteorjs-ex --hostname=myapp-myproject.apps.thedigitalgarage.io
 
 in the CLI.
 
@@ -178,7 +182,7 @@ To take a look at environment variables set for each pod, run `oc env pods --all
 
 #### Success
 
-You should now have a Meteor welcome page rendered via AngularJS.
+You should now have a Meteor welcome page.
 
 #### Pushing updates
 
